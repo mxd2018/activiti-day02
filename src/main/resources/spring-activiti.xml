@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="GBK"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- 数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<!--配置数据库的中文乱码 -->
+		<property name="url" value="jdbc:mysql://localhost:3306/activiti" />
+		<property name="username" value="root" />
+		<property name="password" value="123" />
+		<property name="maxActive" value="3" />
+		<property name="maxIdle" value="1" />
+	</bean>
+	
+	<!-- SpringProcessEngineConfiguration这个类就是用来与spring整合的，
+		   该类不支持自动的事务管理，因此要手动添加事务管理 -->
+	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- 自动建表 -->
+		<property name="databaseSchemaUpdate" value="true" />
+		<!-- 事务管理 -->
+		<property name="transactionManager" ref="transactionManager"/>
+	</bean>
+	
+	<!-- 创建ProcessEngine -->
+	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+		<property name="processEngineConfiguration" ref="processEngineConfiguration" />
+	</bean>
+
+	<!-- 创建单元测试支持bean -->
+	<bean id="activitiRule" class="org.activiti.engine.test.ActivitiRule">
+		<property name="processEngine" ref="processEngine" />
+	</bean>
+	
+	
+	<!-- 事务管理机制 -->
+	<bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+</beans>
